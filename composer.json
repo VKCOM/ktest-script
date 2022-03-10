@@ -1,8 +1,8 @@
 {
-    "name": "quasilyte/ktest-script",
+    "name": "vkcom/ktest-script",
     "description": "Test and benchmark KPHP code",
     "type": "library",
-    "homepage": "https://github.com/quasilyte/ktest-script",
+    "homepage": "https://github.com/vkcom/ktest-script",
     "license": "MIT",
     "authors": [
         {
