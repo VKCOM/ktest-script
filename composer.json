@@ -1,0 +1,24 @@
+{
+    "name": "quasilyte/ktest-script",
+    "description": "Test and benchmark KPHP code",
+    "type": "library",
+    "homepage": "https://github.com/quasilyte/ktest-script",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Iskander Sharipov",
+            "email": "quasilyte@gmail.com"
+        },
+        {
+            "name": "Petr Makhnev",
+            "email": "mr.makhneff@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "ext-zip": "*"
+    },
+    "bin": [
+        "src/ktest"
+    ]
+}

@@ -1,0 +1,97 @@
+#!/usr/bin/env php
+<?php
+
+$err = main(array_slice($argv, 1));
+if ($err) {
+    die("$err\n");
+}
+
+function main($args) {
+    $sys_info = new SystemInfo();
+    $err = $sys_info->discover();
+    if ($err) {
+        on_unsupported_target("can't resolve system platform");
+        return '';
+    }
+
+    $archive_name = "ktest-{$sys_info->os}-{$sys_info->arch}.zip";
+    $archive_full_name = __DIR__ . '/' . $archive_name;
+    if (!file_exists($archive_full_name)) {
+        on_unsupported_target("no binary packaged for this platform ({$sys_info->os}-{$sys_info->arch})");
+        return '';
+    }
+
+    $exe_name = 'ktest';
+    if ($sys_info->os === 'windows') {
+        $exe_name .= '.exe';
+    }
+    $exe_dst_folder = __DIR__ . '/bin';
+    $exe_full_name = $exe_dst_folder . '/' . $exe_name;
+    if (!file_exists($exe_full_name)) {
+        $err = unzip_file($exe_dst_folder, $archive_full_name);
+        if ($err) {
+            return $err;
+        }
+        if ($sys_info->os !== 'windows') {
+            system("chmod +x $exe_full_name");
+        }
+    }
+
+    $cmd_parts = [$exe_full_name];
+    foreach ($args as $a) {
+        $cmd_parts[] = $a;
+    }
+    $cmd_string = implode(' ', $cmd_parts);
+    $out = shell_exec($cmd_string);
+    echo "$out";
+
+    return '';
+}
+
+function on_unsupported_target($reason) {
+    echo "Can't run ktest via composer script for this system\n";
+    echo "Reason: $reason\n";
+    echo "Solution: download and install binary from the release page:\n";
+    echo "\thttps://github.com/VKCOM/ktest/releases\n";
+}
+
+function unzip_file(string $dst_filename, string $archive_filename) {
+    $zip = new ZipArchive();
+    $res = $zip->open($archive_filename);
+    if ($res !== true) {
+        return "failed to open $archive_filename";
+    }
+
+    if (!$zip->extractTo($dst_filename)) {
+        return "failed to extract $archive_filename to $dst_filename";
+    }
+    return '';
+}
+
+class SystemInfo {
+    public string $os = '';
+    public string $arch = '';
+
+    public function discover() {
+        $info_string = strtolower(php_uname('a'));
+        if (preg_match('/linux/', $info_string)) {
+            $this->os = 'linux';
+        } else if (preg_match('/darwin/', $info_string)) {
+            $this->os = 'darwin';
+        } else if (preg_match('/win/', $info_string)) {
+            $this->os = 'windows';
+        } else {
+            return false;
+        }
+
+        if (preg_match('/x86_64|amd64/', $info_string)) {
+            $this->arch = 'amd64';
+        } else if (preg_match('/arm64/', $info_string)) {
+            $this->arch = 'arm64';
+        } else {
+            return false;
+        }
+
+        return '';
+    }
+}
