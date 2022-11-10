@@ -42,8 +42,16 @@ function main($args) {
         $cmd_parts[] = $a;
     }
     $cmd_string = implode(' ', $cmd_parts);
-    $out = shell_exec($cmd_string);
-    echo "$out";
+    $handle = popen("$cmd_string 2>&1", 'r');
+    while (true) {
+        $line = fgets($handle);
+        if ($line === false) {
+            break;
+        }
+        echo $line;
+        flush();
+    }
+    pclose($handle);
 
     return '';
 }
